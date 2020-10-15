@@ -12,7 +12,6 @@ import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDoc
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.RestDocumentationExtension;
 import org.springframework.restdocs.constraints.ConstraintDescriptions;
@@ -35,7 +34,7 @@ import static org.springframework.restdocs.snippet.Attributes.key;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(RestDocumentationExtension.class)
-@AutoConfigureRestDocs
+@AutoConfigureRestDocs(uriScheme = "https", uriHost = "dev.springframework.guru", uriPort = 80)
 @WebMvcTest(BeerController.class)
 @ComponentScan(basePackages = "guru.springframework.sfgrestdocsexample.web.mappers")
 class BeerControllerTest {
@@ -57,9 +56,9 @@ class BeerControllerTest {
                 .param("iscold", "yes")
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andDo(document("v1/beer",
-                        pathParameters(
-                            parameterWithName("beerId").description("UUID of desired beer to get.")
+                .andDo(document("v1/beer-get",
+                        pathParameters (
+                                parameterWithName("beerId").description("UUID of desired beer to get.")
                         ),
                         requestParameters(
                                 parameterWithName("iscold").description("Is Beer Cold Query param")
@@ -88,19 +87,18 @@ class BeerControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(beerDtoJson))
                 .andExpect(status().isCreated())
-                .andDo(document("v1/beer",
+                .andDo(document("v1/beer-new",
                         requestFields(
                                 fields.withPath("id").ignored(),
                                 fields.withPath("version").ignored(),
                                 fields.withPath("createdDate").ignored(),
                                 fields.withPath("lastModifiedDate").ignored(),
-                                fields.withPath("beerStyle").description("Style of beer"),
+                                fields.withPath("beerName").description("Name of the beer"),
+                                fields.withPath("beerStyle").description("Style of Beer"),
                                 fields.withPath("upc").description("Beer UPC").attributes(),
                                 fields.withPath("price").description("Beer Price"),
-                                fields.withPath("beerName").description("Name of the beer"),
                                 fields.withPath("quantityOnHand").ignored()
-                        )
-                ));
+                        )));
     }
 
     @Test
@@ -133,7 +131,7 @@ class BeerControllerTest {
         }
 
         private FieldDescriptor withPath(String path) {
-            return fieldWithPath(path).attributes(key("constrains").value(StringUtils
+            return fieldWithPath(path).attributes(key("constraints").value(StringUtils
                     .collectionToDelimitedString(this.constraintDescriptions
                             .descriptionsForProperty(path), ". ")));
         }
